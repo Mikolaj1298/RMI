@@ -95,7 +95,7 @@ public class ManagerFrame extends JFrame {
 		contentPane.add(lblIntervals, gbc_lblIntervalms);
 		
 		spinner = new JSpinner();
-		spinner.setModel(new SpinnerNumberModel(new Integer(4000), null, null, new Integer(500)));
+		spinner.setModel(new SpinnerNumberModel(new Integer(3), null, null, new Integer(1)));
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner.insets = new Insets(0, 0, 0, 5);
@@ -131,7 +131,7 @@ public class ManagerFrame extends JFrame {
 	
 	public void insertBillboard(int id, IBillboard billboard) {
 		OrderTableModel model = (OrderTableModel) table.getModel();
-		model.addRow(new Object[] { id, "asd", 0, 0, 5000, true });
+		model.addRow(new Object[] { id, "init", 0, 5000, true });
 		this.repaint();
 	}
 	
@@ -150,8 +150,8 @@ public class ManagerFrame extends JFrame {
 		int row = model.getRow(id);
 
 		model.setValueAt(data.advert, row, 1);
-		model.setValueAt(data.wind, row, 2);
-		model.setValueAt(data.precipitation, row, 3);
+		model.setValueAt(data.capacity.length, row, 2);
+		model.setValueAt(data.duration, row, 3);
 	}
 
 	class OrderTableModelListener implements TableModelListener {
@@ -165,9 +165,7 @@ public class ManagerFrame extends JFrame {
 				OrderTableModel model = (OrderTableModel) table.getModel();
 				int boardID = (int) model.getValueAt(row, 0);
 
-				if (col == 5)
-					manager.toggleBoard(boardID);
-				else if (col == 4)
+				if (col == 4)
 					manager.setInterval(boardID, (int) model.getValueAt(row, col));
 				
 			} catch (RemoteException e) {

@@ -8,8 +8,6 @@ public interface IBillboard extends Remote{
 
 	boolean register(IClient s, char category) throws RemoteException; 
     boolean unregister(IClient s) throws RemoteException;
-    void toggle() throws RemoteException;
-    void setUpdateInterval(long milisec) throws RemoteException;
     BillboardData getBillboardData() throws RemoteException;
     
     

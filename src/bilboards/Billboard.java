@@ -11,10 +11,10 @@ public class Billboard implements IBillboard{
 	private String advert = "init";
 	private float temperature = 5;
 	private float wind;
-	private float precipitation;
 	private int id = -1;
 	private long interval = 3000;
 	private boolean enabled = true;
+	
 	private Map<Character, IClient> clients;
 	ArrayList<BillboardStorage> list = new ArrayList<BillboardStorage>();
 	private int counter = 0;
@@ -37,96 +37,11 @@ public class Billboard implements IBillboard{
 		}
 	}
 	
-	public Billboard(BillboardFrame frame) {
+	public Billboard(BillboardFrame frame) throws RemoteException {
 		this.frame = frame;
 		this.clients = new HashMap<>();
-		
-		Thread dataReading = new Thread(() -> {
-			while (true) {
-				if (enabled) {
+		start();
 
-					try {
-						if (clients.containsKey('t')) {
-							Order order = clients.get('t').getOrder();
-							boolean flag = false;
-							for(int i = 0; i<list.size(); i++) {
-								if(list.get(i).getAdvertText().contentEquals( order.advertText)) {
-									flag = true;
-								}
-							}
-							if(!flag) {
-								BillboardStorage newItem = new BillboardStorage('t', order.advertText);
-								list.add(newItem);
-							} 
-							
-							for(int i=0; i< list.size(); i++) {
-//								System.out.println(list.get(i));
-							}
-							
-							System.out.println(list.get(counter).getOwner() + "  " + list.get(counter).getAdvertText() + "  " + counter);
-							advert = list.get(counter).getAdvertText();
-							order.advertText = advert;
-							counter++;
-							if(counter == list.size()) {
-								counter = 0;
-							}
-							
-							temperature = order.value;
-							System.out.println("\n");
-							frame.updateOrder(order);
-						} else {
-							for(int i=0; i< list.size(); i++) {
-								if(list.get(i).getOwner() == 't') {
-									list.remove(i);
-								}
-//								System.out.println(list.get(i));
-							}
-						}
-
-						if (clients.containsKey('w')) {
-							Order order = clients.get('w').getOrder();
-							boolean flag = false;
-							for(int i = 0; i<list.size(); i++) {
-								if(list.get(i).getAdvertText().contentEquals( order.advertText)) {
-									flag = true;
-								}
-							}
-							if(!flag) {
-								BillboardStorage newItem = new BillboardStorage('w', order.advertText);
-								list.add(newItem);
-							} 
-							wind = order.value;
-							frame.updateOrder(order);
-						} else {
-							for(int i=0; i< list.size(); i++) {
-								if(list.get(i).getOwner() == 'w') {
-									list.remove(i);
-								}
-							}
-						
-						}
-
-						if (clients.containsKey('p')) {
-							Order order = clients.get('p').getOrder();
-							precipitation = order.value;
-							frame.updateOrder(order);
-						}
-						
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-
-				try {
-					Thread.sleep(interval);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-
-		dataReading.start();
 	}
 	
 public void registerToManager() throws Exception {
@@ -158,7 +73,7 @@ public void registerToManager() throws Exception {
 	public boolean register(IClient s, char category) {
 		if (!clients.containsKey(category)) {
 			clients.put(category, s);
-			frame.updateLabels(clients);
+
 			return true;
 		} else
 			return false;
@@ -172,26 +87,19 @@ public void registerToManager() throws Exception {
 		if (clients.containsKey(category)) {
 			clients.remove(category);
 			frame.clearOrder(category);
-			frame.updateLabels(clients);
+			
+			if(id < list.size()) {
+				removeAdvertisement(id);
+			}
 			return true;
 		}
 		return false;
 	}
+
 	
 	@Override
-	public void toggle() {
-		if (enabled) {
-			enabled = false;
-			frame.toggle(enabled);
-		} else {
-			enabled = true;
-			frame.toggle(enabled);
-		}
-	}
-
-	@Override
-	public void setUpdateInterval(long milisec) {
-		interval = milisec;
+	public void setDisplayInterval(Duration displayInterval) throws RemoteException {
+		interval = displayInterval.toMillis();
 	}
 
 	@Override
@@ -200,45 +108,164 @@ public void registerToManager() throws Exception {
 		
 		billboardData.temperature = temperature;
 		billboardData.wind = wind;
-		billboardData.precipitation = precipitation;
+		billboardData.duration = (int)interval;
 		billboardData.advert = advert;
-		
+		billboardData.capacity = getCapacity();
 		return billboardData;
 	}
 
-	@Override
-	public boolean addAdvertisement(String advertText, Duration displayPeriod, int orderId) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
 	public boolean removeAdvertisement(int orderId) throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
+		list.remove(orderId);
+		return true;
 	}
 
 	@Override
 	public int[] getCapacity() throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		int capacity[] = new int[list.size()];
+		for(int i = 0; i < list.size(); i++) {
+			capacity[i] = i;
+		}
+		return capacity;
 	}
 
+	
 	@Override
-	public void setDisplayInterval(Duration displayInterval) throws RemoteException {
-		// TODO Auto-generated method stub
+	public boolean addAdvertisement(String advertText, Duration displayPeriod, int orderId) throws RemoteException {
+		if(list.get(orderId).getAdvertText().contentEquals(advertText)) {
+		//	System.out.println("True");
+			return true;
+		} else {
+	//		System.out.println("False");
+			return false;
+		}
+	}
+	
+	@Override
+	public boolean start() throws RemoteException {
+		if(enabled) {
+			Thread dataReading = new Thread(() -> {
+				while (true) {
+					if (enabled) {
+
+						try {
+							if (clients.containsKey('f')) {
+								Order order = clients.get('f').getOrder();
+								boolean flag = false;
+								for(int i = 0; i<list.size(); i++) {
+//									flag = addAdvertisement(order.advertText, null, i);
+								}
+								for(int i = 0; i<list.size(); i++) {
+									if(addAdvertisement(order.advertText, null, i)) {
+										flag = true;
+									} 
+								}
+								if(!flag) {
+									BillboardStorage newItem = new BillboardStorage('f', order.advertText);
+									System.out.println("DODAJÊ");
+									list.add(newItem);
+									
+									flag = false;
+								} 
+								
+								System.out.println(list.get(counter).getOwner() + "  " + list.get(counter).getAdvertText() + "  " + counter);
+								advert = list.get(counter).getAdvertText();
+								order.advertText = advert;
+								counter++;
+								if(counter == list.size()) {
+									counter = 0;
+								}
+															
+								System.out.println("\n");
+								
+								frame.updateOrder(order);
+							} else {
+								for(int i=0; i< list.size(); i++) {
+									if(list.get(i).getOwner() == 'f') {
+										list.remove(i);
+									}
+								}
+							}
+
+							if (clients.containsKey('s')) {
+								Order order = clients.get('s').getOrder();
+								boolean flag = false;
+								for(int i = 0; i<list.size(); i++) {
+									if(list.get(i).getAdvertText().contentEquals( order.advertText)) {
+										flag = true;
+									}
+								}
+								if(!flag) {
+									BillboardStorage newItem = new BillboardStorage('s', order.advertText);
+									System.out.println("DODAJÊ");
+									list.add(newItem);
+									flag = false;
+								} 
+
+								//frame.updateOrder(order);
+							} else {
+								for(int i=0; i< list.size(); i++) {
+									if(list.get(i).getOwner() == 's') {
+										list.remove(i);
+									}
+								}
+							
+							}
+							
+							
+							
+							if (clients.containsKey('t')) {
+								Order order = clients.get('t').getOrder();
+								boolean flag = false;
+								for(int i = 0; i<list.size(); i++) {
+									if(list.get(i).getAdvertText().contentEquals( order.advertText)) {
+										flag = true;
+									}
+								}
+								if(!flag) {
+									BillboardStorage newItem = new BillboardStorage('t', order.advertText);
+									System.out.println("DODAJÊ");
+									list.add(newItem);
+									flag = false;
+								} 
+								//frame.updateOrder(order);
+							} else {
+								for(int i=0; i< list.size(); i++) {
+									if(list.get(i).getOwner() == 't') {
+										list.remove(i);
+									}
+								}
+							
+							}
+
+							
+							
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
+					try {
+						Thread.sleep(interval);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			});
+
+			dataReading.start();
+			return true;
+		} else {
+			return false;
+		}
+		
 		
 	}
 
 	@Override
-	public boolean start() throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean stop() throws RemoteException {
-		// TODO Auto-generated method stub
+		enabled = false;
 		return false;
 	}
 }

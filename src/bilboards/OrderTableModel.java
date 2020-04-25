@@ -6,7 +6,7 @@ import javax.swing.table.AbstractTableModel;
 
 @SuppressWarnings("serial")
 public class OrderTableModel extends AbstractTableModel {
-	private String[] columnNames = {"ID", "Temperature", "Wind", "Precipitation", "Interval", "Enabled"};
+	private String[] columnNames = {"ID", "Actual Advert", "Capacity", "Interval", "Enabled"};
 	private List<ArrayList<Object>> data = new ArrayList<ArrayList<Object>>();
 
 	@Override

@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.time.Duration;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -71,12 +72,9 @@ public class Manager implements IManager{
 			return false;
 	}
 	
-	public void toggleBoard(int id) throws RemoteException {
-		billboards.get(id).toggle();
-	}
 	
 	public void setInterval(int id, int value) throws RemoteException {
-		billboards.get(id).setUpdateInterval(value);
+		billboards.get(id).setDisplayInterval(Duration.ofMillis(value));
 	}
 
 
@@ -89,7 +87,7 @@ public class Manager implements IManager{
 
 		Registry registry = LocateRegistry.getRegistry();
 		try {
-			IBillboard billboardStub = (IBillboard) registry.lookup("IBillboard" + order.value);
+			IBillboard billboardStub = (IBillboard) registry.lookup("IBillboard" );
 		} catch (RemoteException | NotBoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -26,20 +26,15 @@ public class Client implements IClient{
 
 				//System.out.println(frame.getAdvertText());
 				switch (order.category) {
+				case 'f':
+					order.advertText = frame.getAdvertText();
+					
+					break;
+				case 's':
+					order.advertText = frame.getAdvertText();
+					break;
 				case 't':
-					order.value = 2;
 					order.advertText = frame.getAdvertText();
-					counter++;
-					if(counter == 4) {
-						counter = 0;
-					}
-					break;
-				case 'w':
-					order.value = 5;
-					order.advertText = frame.getAdvertText();
-					break;
-				case 'p':
-					order.value = 1;
 				}
 
 				try {
@@ -57,7 +52,6 @@ public class Client implements IClient{
 		try {
 			UnicastRemoteObject.unexportObject(this, true);
 		} catch (NoSuchObjectException e) {}
-
 		Registry registry = LocateRegistry.getRegistry();
 		IBillboard billboardStub = (IBillboard) registry.lookup("IBillboard" + billboardID);
 		clientStub = (IClient) UnicastRemoteObject.exportObject(this, 0);

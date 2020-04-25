@@ -6,6 +6,7 @@ import java.io.*;
 public class BillboardData implements Serializable {
 	  public float temperature;
 	  public float wind;
-	  public float precipitation;
+	  public int duration;
 	  public String advert;
+	  public int[] capacity;
 }

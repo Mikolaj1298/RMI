@@ -69,9 +69,9 @@ public class ClientFrame extends JFrame {
 		contentPane.add(lblSensorType, gbc_lblSensorType);
 
 		comboBoxClientType = new JComboBox<>();
-		comboBoxClientType.addItem("Temperature");
-		comboBoxClientType.addItem("Wind");
-		comboBoxClientType.addItem("Precipitation");
+		comboBoxClientType.addItem("First slot");
+		comboBoxClientType.addItem("Second slot");
+		comboBoxClientType.addItem("Third slot");
 		GridBagConstraints gbc_comboBoxSensorType = new GridBagConstraints();
 		gbc_comboBoxSensorType.gridwidth = 2;
 		gbc_comboBoxSensorType.insets = new Insets(0, 0, 5, 0);
@@ -97,7 +97,7 @@ public class ClientFrame extends JFrame {
 		gbc_comboBoxBoards.gridy = 1;
 		contentPane.add(comboBoxBillboards, gbc_comboBoxBoards);
 		
-		JLabel lblInterval = new JLabel("Duration (ms):");
+		JLabel lblInterval = new JLabel("Duration (s):");
 		GridBagConstraints gbc_lblInterval = new GridBagConstraints();
 		gbc_lblInterval.anchor = GridBagConstraints.WEST;
 		gbc_lblInterval.insets = new Insets(0, 0, 5, 5);
@@ -106,7 +106,7 @@ public class ClientFrame extends JFrame {
 		contentPane.add(lblInterval, gbc_lblInterval);
 		
 		spinner = new JSpinner();
-		spinner.setModel(new SpinnerNumberModel(new Integer(5000), null, null, new Integer(500)));
+		spinner.setModel(new SpinnerNumberModel(new Integer(3), null, null, new Integer(1)));
 		GridBagConstraints gbc_spinner = new GridBagConstraints();
 		gbc_spinner.fill = GridBagConstraints.HORIZONTAL;
 		gbc_spinner.gridwidth = 2;
@@ -125,6 +125,10 @@ public class ClientFrame extends JFrame {
 		contentPane.add(separator, gbc_separator);
 
 		JButton btnRegister = new JButton("Register");
+		JButton btnUnregister = new JButton("Unregister");
+		btnUnregister.setEnabled(false);
+		btnRegister.setEnabled(false);
+		
 		btnRegister.addActionListener(new ActionListener() {
 			@SuppressWarnings("deprecation")
 			public void actionPerformed(ActionEvent event) {
@@ -137,9 +141,9 @@ public class ClientFrame extends JFrame {
 					if (btnRegister.getText().equals("Register")) {
 						try {
 							if (client.registerToBillboard(billboardID)) {
-								btnRegister.setText("Unregister");
-								comboBoxBillboards.disable();
-								comboBoxClientType.disable();
+								btnUnregister.setEnabled(true);
+								//comboBoxBillboards.disable();
+								//comboBoxClientType.disable();
 							}
 							else
 								JOptionPane.showMessageDialog(ClientFrame.this, "This slot is already used in that board.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -148,21 +152,31 @@ public class ClientFrame extends JFrame {
 									JOptionPane.ERROR_MESSAGE);
 							e.printStackTrace();
 						}
-					} else if (btnRegister.getText().equals("Unregister")) {
+					} 
+				}  else {
+					JOptionPane.showMessageDialog(ClientFrame.this, "No Billboard selected", "Error",
+							JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+		
+		btnUnregister.addActionListener(new ActionListener() {
+			@SuppressWarnings("deprecation")
+			public void actionPerformed(ActionEvent event) {
+				if (comboBoxBillboards.getSelectedItem() != null) {
+					
+					String billboardIDString = (String) comboBoxBillboards.getSelectedItem();
+					int billboardID = Integer.parseInt(billboardIDString);
+//					System.out.println(billboardID);
+					
 						try {
 							if (client.unregisterFromBillboard(billboardID)) {
-								btnRegister.setText("Register");
-								comboBoxBillboards.enable();
-								comboBoxClientType.enable();
 							}
 						} catch (Exception e) {
 							JOptionPane.showMessageDialog(ClientFrame.this, "Unregister failed", "Error", JOptionPane.ERROR_MESSAGE);
 						}
 					}
-				}  else {
-					JOptionPane.showMessageDialog(ClientFrame.this, "No Billboard selected", "Error",
-							JOptionPane.ERROR_MESSAGE);
-				}
+				
 			}
 		});
 		
@@ -172,6 +186,14 @@ public class ClientFrame extends JFrame {
 		gbc_btnRegister.gridx = 2;
 		gbc_btnRegister.gridy = 5;
 		contentPane.add(btnRegister, gbc_btnRegister);
+		
+		
+		GridBagConstraints gbc_btnUnregister = new GridBagConstraints();
+		gbc_btnUnregister.anchor = GridBagConstraints.EAST;
+		gbc_btnUnregister.insets = new Insets(0, 0, 0, 0);
+		gbc_btnUnregister.gridx = 1;
+		gbc_btnUnregister.gridy = 5;
+		contentPane.add(btnUnregister, gbc_btnUnregister);
 
 		JButton btnRefresh = new JButton("Refresh");
 		btnRefresh.addActionListener(new ActionListener() {
@@ -188,6 +210,7 @@ public class ClientFrame extends JFrame {
 		JButton btn_setAdvertText = new JButton("Add Advert Text");
 		btn_setAdvertText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
+				btnRegister.setEnabled(true);
 				advertText = advertTextField.getText();
 			}
 		});

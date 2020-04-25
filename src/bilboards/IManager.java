@@ -8,4 +8,5 @@ public interface IManager extends Remote{
 	public boolean unbindBillboard(int billboardId) throws RemoteException;
 	public boolean placeOrder(Order order) throws RemoteException;
 	public boolean withdrawOrder(int orderId) throws RemoteException;
+	
 }
